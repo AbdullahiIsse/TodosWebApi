@@ -5,12 +5,13 @@ using System.Security.Cryptography.Xml;
 using System.Threading.Tasks;
 using AdvancedTodo.Data;
 using AdvancedTodo.Models;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TodosWebApi.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Microsoft.AspNetCore.Mvc.Route("[controller]")]
     public class TodosController : ControllerBase
     {
         private ITodoData iTodoData;
@@ -27,12 +28,28 @@ namespace TodosWebApi.Controllers
             try
             {
                 IEnumerable<Todo> todos = iTodoData.GetTodos();
-                if (isCompleted != null && userId != null)
+                if (isCompleted != null  || userId != null)
                 {
-                    todos = todos.Where(todo => todo.IsCompleted.Equals(isCompleted) && todo.UserId.Equals(userId));
+                    todos = todos.Where(todo => todo.IsCompleted.Equals(isCompleted)  || todo.UserId.Equals(userId));
                 }
 
                 return Ok(todos);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return StatusCode(500, e.Message);
+            }
+        }
+        
+        [HttpGet]
+        [Microsoft.AspNetCore.Mvc.Route("{id:int}")]
+        public async Task<ActionResult<Todo>> GetTodosById([FromRoute] int id)
+        {
+            try
+            {
+                Todo todo =  iTodoData.Get(id);
+                return Ok(todo);
             }
             catch (Exception e)
             {
@@ -58,7 +75,7 @@ namespace TodosWebApi.Controllers
         }
 
         [HttpDelete]
-        [Route("{id:int}")]
+        [Microsoft.AspNetCore.Mvc.Route("{id:int}")]
         public async Task<ActionResult> DeleteTodo([FromRoute] int id)
         {
             try
@@ -75,7 +92,7 @@ namespace TodosWebApi.Controllers
 
 
         [HttpPatch]
-        [Route("{id:int}")]
+        [Microsoft.AspNetCore.Mvc.Route("{id:int}")]
         public async Task<ActionResult<Todo>> UpdateTodo([FromBody] Todo todo)
         {
             try
